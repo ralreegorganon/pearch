@@ -1,0 +1,7 @@
+development:
+    driver: postgres
+    open: user=pearch password=flylikeaneagle dbname=pearch sslmode=disable
+
+production:
+    driver: postgres
+    open: $PEARCH_CONNECTION_STRING
