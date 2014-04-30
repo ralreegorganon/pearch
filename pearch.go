@@ -61,7 +61,8 @@ func doTheDirtyWork() {
 		panic(err)
 	}
 
-	connectionString := "user=pearch password=flylikeaneagle dbname=pearch sslmode=disable"
+    connectionString := os.Getenv("PEARCH_CONNECTION_STRING")
+
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		panic(err)

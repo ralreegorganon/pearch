@@ -12,6 +12,9 @@ Create a new database
     
     createdb -O pearch pearch
 
+export PEARCH_CONNECTION_STRING="user=pearch password=flylikeaneagle dbname=pearch sslmode=disable"
+
+
 Install goose to run the database migrations
     
     go get bitbucket.org/liamstask/goose/cmd/goose
