@@ -3,13 +3,15 @@ package main
 import (
 	"database/sql"
 	"encoding/xml"
-	_ "github.com/lib/pq"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -35,12 +37,14 @@ func doTheDirtyWork() {
 	response, err := http.Get("http://map.pilotedge.net/status_live.xml")
 	defer response.Body.Close()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 
 	for i, ch := range contents {
@@ -58,14 +62,16 @@ func doTheDirtyWork() {
 	status := Status{}
 	err = xml.Unmarshal([]byte(string(contents)), &status)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 
-    connectionString := os.Getenv("PEARCH_CONNECTION_STRING")
+	connectionString := os.Getenv("PEARCH_CONNECTION_STRING")
 
 	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+		return
 	}
 	defer db.Close()
 
@@ -75,7 +81,8 @@ func doTheDirtyWork() {
 		sql := "insert into controller_events (event_timestamp, name, role, callsign, primary_frequency, latitude, longitude) values ($1, $2, $3, $4, $5, $6, $7)"
 		_, err = db.Exec(sql, t, c.Name, c.Role, c.Callsign, c.PrimaryFrequency, c.Position.Latitude, c.Position.Longitude)
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			continue
 		}
 	}
 
@@ -83,7 +90,8 @@ func doTheDirtyWork() {
 		sql := "insert into pilot_events (event_timestamp, cid, name, equipment, callsign, frequency, radio, desired_role, latitude, longitude, altitude, ground_speed, true_heading, flight_plan_origin, flight_plan_destination, flight_plan_route, flight_plan_remarks) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)"
 		_, err = db.Exec(sql, t, p.CID, p.Name, p.Equipment, p.Callsign, p.Frequency.Freq, p.Frequency.Radio, p.Frequency.DesiredRole, p.Position.Latitude, p.Position.Longitude, p.Position.Altitude, p.Position.GroundSpeed, p.Position.TrueHeading, p.FlightPlan.Origin, p.FlightPlan.Destination, p.FlightPlan.Route, p.FlightPlan.Remarks)
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			continue
 		}
 	}
 }
