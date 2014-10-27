@@ -35,11 +35,11 @@ func main() {
 
 func doTheDirtyWork() {
 	response, err := http.Get("http://map.pilotedge.net/status_live.xml")
-	defer response.Body.Close()
 	if err != nil {
 		log.Println(err)
 		return
 	}
+	defer response.Body.Close()
 
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
